@@ -1,5 +1,6 @@
 package eu.kanade.presentation.more.settings
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -9,12 +10,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.more.settings.widget.EditTextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.InfoWidget
@@ -26,6 +29,7 @@ import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TitleFontSize
 import eu.kanade.presentation.more.settings.widget.TrackingPreferenceWidget
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import tachiyomi.presentation.core.components.BaseSliderItem
 import tachiyomi.presentation.core.util.collectAsState
@@ -169,12 +173,24 @@ internal fun PreferenceItem(
                 )
             }
             is Preference.PreferenceItem.TrackerPreference -> {
+                val context = LocalContext.current
+                LaunchedEffect(item.tracker) {
+                    item.tracker.isRefreshingFlow
+                        .drop(1) // screen load emits initial "false" once
+                        .collect {
+                            if (it) return@collect
+                            Toast.makeText(context, "${item.tracker.name}: Refresh successful", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                }
                 val isLoggedIn by item.tracker.let { tracker ->
                     tracker.isLoggedInFlow.collectAsState(tracker.isLoggedIn)
                 }
+                val isRefreshing by item.tracker.isRefreshingFlow.collectAsState()
                 TrackingPreferenceWidget(
                     tracker = item.tracker,
                     isLoggedIn = isLoggedIn,
+                    isRefreshing = isRefreshing,
                     onClick = { if (isLoggedIn) item.logout() else item.login() },
                 )
             }

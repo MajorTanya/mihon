@@ -7,6 +7,9 @@ import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.data.track.shikimori.dto.SMOAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
@@ -126,6 +129,15 @@ class Shikimori(id: Long) : BaseTracker(id, "Shikimori"), DeletableTracker {
             saveCredentials(user.id, oauth.accessToken)
         } catch (e: Throwable) {
             logout()
+        }
+    }
+
+    override fun refreshUser() {
+        CoroutineScope(Dispatchers.IO).launch {
+            setRefreshing(true)
+            val currentUser = api.getCurrentUser()
+            saveDisplayUsername(currentUser.nickname)
+            setRefreshing(false)
         }
     }
 
