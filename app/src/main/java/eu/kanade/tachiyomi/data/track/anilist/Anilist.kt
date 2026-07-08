@@ -8,9 +8,6 @@ import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.anilist.dto.ALOAuth
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
@@ -210,14 +207,12 @@ class Anilist(id: Long) : BaseTracker(id, "AniList"), DeletableTracker {
         return track
     }
 
-    override fun refreshUser() {
-        CoroutineScope(Dispatchers.IO).launch {
-            setRefreshing(true)
-            val currentUser = api.getCurrentUser()
-            scorePreference.set(currentUser.mediaListOptions.scoreFormat)
-            saveDisplayUsername(currentUser.name)
-            setRefreshing(false)
-        }
+    override suspend fun refreshUser() {
+        setRefreshing(true)
+        val currentUser = api.getCurrentUser()
+        scorePreference.set(currentUser.mediaListOptions.scoreFormat)
+        saveDisplayUsername(currentUser.name)
+        setRefreshing(false)
     }
 
     override suspend fun login(username: String, password: String) = login(password)

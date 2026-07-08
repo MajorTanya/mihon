@@ -78,7 +78,7 @@ data class DummyTracker(
         track: eu.kanade.tachiyomi.data.database.models.Track,
     ): eu.kanade.tachiyomi.data.database.models.Track = track
 
-    override fun refreshUser() = Unit
+    override suspend fun refreshUser() = Unit
 
     override suspend fun login(username: String, password: String) = Unit
 

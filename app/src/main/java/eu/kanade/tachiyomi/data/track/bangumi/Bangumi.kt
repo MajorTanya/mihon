@@ -6,9 +6,6 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.bangumi.dto.BGMOAuth
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
@@ -117,13 +114,11 @@ class Bangumi(id: Long) : BaseTracker(id, "Bangumi") {
         }
     }
 
-    override fun refreshUser() {
-        CoroutineScope(Dispatchers.IO).launch {
-            setRefreshing(true)
-            val currentUser = api.getCurrentUser()
-            saveDisplayUsername(currentUser.nickname?.takeIf { it.isNotBlank() } ?: currentUser.username)
-            setRefreshing(false)
-        }
+    override suspend fun refreshUser() {
+        setRefreshing(true)
+        val currentUser = api.getCurrentUser()
+        saveDisplayUsername(currentUser.nickname?.takeIf { it.isNotBlank() } ?: currentUser.username)
+        setRefreshing(false)
     }
 
     fun saveToken(oauth: BGMOAuth?) {
