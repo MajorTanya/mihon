@@ -9,6 +9,9 @@ import eu.kanade.tachiyomi.data.track.hikka.dto.HKOAuth
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
@@ -134,6 +137,15 @@ class Hikka(id: Long) : BaseTracker(id, "Hikka"), DeletableTracker {
         track.finished_reading_date = (readContent.endDate ?: 0L) * 1000
 
         return track
+    }
+
+    override fun refreshUser() {
+        CoroutineScope(Dispatchers.IO).launch {
+            setRefreshing(true)
+            val currentUser = api.getCurrentUser()
+            saveDisplayUsername(currentUser.username)
+            setRefreshing(false)
+        }
     }
 
     override suspend fun login(username: String, password: String) = login(password)

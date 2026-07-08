@@ -7,6 +7,9 @@ import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.kitsu.dto.KitsuOAuth
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
@@ -130,6 +133,15 @@ class Kitsu(id: Long) : BaseTracker(id, "Kitsu"), DeletableTracker {
         val currentUser = api.getCurrentUser()
         saveDisplayUsername(currentUser.attributes.name)
         saveCredentials(username, currentUser.id)
+    }
+
+    override fun refreshUser() {
+        CoroutineScope(Dispatchers.IO).launch {
+            setRefreshing(true)
+            val currentUser = api.getCurrentUser()
+            saveDisplayUsername(currentUser.attributes.name)
+            setRefreshing(false)
+        }
     }
 
     override fun logout() {
