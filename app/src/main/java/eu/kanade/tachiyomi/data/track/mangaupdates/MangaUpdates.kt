@@ -10,9 +10,6 @@ import eu.kanade.tachiyomi.data.track.mangaupdates.dto.MURating
 import eu.kanade.tachiyomi.data.track.mangaupdates.dto.copyTo
 import eu.kanade.tachiyomi.data.track.mangaupdates.dto.toTrackSearch
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.domain.track.model.Track as DomainTrack
 
@@ -116,13 +113,11 @@ class MangaUpdates(id: Long) : BaseTracker(id, "MangaUpdates"), DeletableTracker
         saveCredentials(authenticated.uid.toString(), authenticated.sessionToken)
     }
 
-    override fun refreshUser() {
-        CoroutineScope(Dispatchers.IO).launch {
-            setRefreshing(true)
-            val currentUser = api.getCurrentUser()
-            saveDisplayUsername(currentUser.username)
-            setRefreshing(false)
-        }
+    override suspend fun refreshUser() {
+        setRefreshing(true)
+        val currentUser = api.getCurrentUser()
+        saveDisplayUsername(currentUser.username)
+        setRefreshing(false)
     }
 
     fun restoreSession(): String? {

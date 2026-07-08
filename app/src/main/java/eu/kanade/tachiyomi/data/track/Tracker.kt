@@ -58,7 +58,7 @@ interface Tracker {
     @CallSuper
     fun logout()
 
-    fun refreshUser() = Unit
+    suspend fun refreshUser() = Unit
 
     val isLoggedIn: Boolean
 

@@ -7,9 +7,6 @@ import eu.kanade.tachiyomi.data.track.BaseTracker
 import eu.kanade.tachiyomi.data.track.DeletableTracker
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
 import eu.kanade.tachiyomi.data.track.myanimelist.dto.MALOAuth
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.injectLazy
@@ -147,13 +144,11 @@ class MyAnimeList(id: Long) : BaseTracker(id, "MyAnimeList"), DeletableTracker {
         }
     }
 
-    override fun refreshUser() {
-        CoroutineScope(Dispatchers.IO).launch {
-            setRefreshing(true)
-            val username = api.getCurrentUser()
-            saveDisplayUsername(username)
-            setRefreshing(false)
-        }
+    override suspend fun refreshUser() {
+        setRefreshing(true)
+        val username = api.getCurrentUser()
+        saveDisplayUsername(username)
+        setRefreshing(false)
     }
 
     override fun logout() {
